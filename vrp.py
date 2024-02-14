@@ -23,13 +23,9 @@ class Driver:
     self.loads = [] #[Load]
 
   def deliverLoad(self, load):
-    if self.enoughDeliveryTime(load):
-      self.driveTime += distance(self.position, load.pickup) + distance(load.pickup, load.dropoff)
-      self.position = load.dropoff
-      self.loads.append(load.id)
-      return True
-    else:
-      return False
+    self.driveTime += distance(self.position, load.pickup) + distance(load.pickup, load.dropoff)
+    self.position = load.dropoff
+    self.loads.append(load.id)
 
   # check if there is enough time to deliver load and get back to depot before 12 total hours
   def enoughDeliveryTime(self, load):
@@ -65,31 +61,58 @@ def readInput():
 def distance(point1, point2):
   return math.sqrt((point2.x - point1.x) ** 2 + (point2.y - point1.y) ** 2)
 
+def closestLoadIndex(loads, position):
+  minIndex = 0
+  minDistance = 1000
+  for i, load in enumerate(loads):
+    thisDistance = distance(position, load.pickup)
+    if thisDistance < minDistance:
+      minDistance = thisDistance
+      minIndex = i
+  
+  return minIndex
+
 
 # main functions
 
-# basic solution: one driver per load
+# basic solution, one driver per load
 def solution1(loads): 
   drivers = []
   for load in loads:
-    newDriver = Driver(len(drivers))
-    newDriver.deliverLoad(load)
-    drivers.append(newDriver)
+    driver = Driver(len(drivers))
+    driver.deliverLoad(load)
+    drivers.append(driver)
 
   return drivers
 
+# drivers deliver as many loads as possible before coming back, always choose next closest pickup
+def solution2(loads):
+  drivers = []
+  load = loads[closestLoadIndex(loads, Point(0, 0))]
+
+  while len(loads) > 0:
+    driver = Driver(len(drivers))
+
+    while driver.enoughDeliveryTime(load):
+      driver.deliverLoad(load)
+      loads.remove(load)
+      if len(loads) == 0:
+        break
+
+      load = loads[closestLoadIndex(loads, driver.position)]
+
+    drivers.append(driver)
+
+  return drivers
 
 # main
 # input
 loads = readInput()
 
 # calculation
-drivers = solution1(loads)
-
+# drivers = solution1(loads)
+drivers = solution2(loads)
 
 # output
 for driver in drivers:
   print(driver.loads)
-
-
-
