@@ -61,9 +61,10 @@ def readInput():
 def distance(point1, point2):
   return math.sqrt((point2.x - point1.x) ** 2 + (point2.y - point1.y) ** 2)
 
+# get index of the closest load pickup in loads to position
 def closestLoadIndex(loads, position):
   minIndex = 0
-  minDistance = 1000
+  minDistance = 1000000
   for i, load in enumerate(loads):
     thisDistance = distance(position, load.pickup)
     if thisDistance < minDistance:
@@ -75,7 +76,7 @@ def closestLoadIndex(loads, position):
 
 # main functions
 
-# basic solution, one driver per load
+# basic solution: one driver per load
 def solution1(loads): 
   drivers = []
   for load in loads:
@@ -85,14 +86,15 @@ def solution1(loads):
 
   return drivers
 
-# drivers deliver as many loads as possible before coming back, always choose next closest pickup
+# main solution: drivers deliver as many loads as possible before coming back, always choose next closest pickup
 def solution2(loads):
   drivers = []
-  load = loads[closestLoadIndex(loads, Point(0, 0))]
+  load = loads[closestLoadIndex(loads, Point(0, 0))] # first load
 
   while len(loads) > 0:
     driver = Driver(len(drivers))
 
+    # driver will keep making deliveries until load would be too long to deliver
     while driver.enoughDeliveryTime(load):
       driver.deliverLoad(load)
       loads.remove(load)
@@ -105,14 +107,12 @@ def solution2(loads):
 
   return drivers
 
+
 # main
-# input
 loads = readInput()
 
-# calculation
 # drivers = solution1(loads)
 drivers = solution2(loads)
 
-# output
 for driver in drivers:
   print(driver.loads)
